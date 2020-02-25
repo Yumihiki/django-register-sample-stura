@@ -1,9 +1,10 @@
 {% extends "register/base.html" %}
 {% block content %}
-<form action="" method="POST">
-    <div class="col-md-6 offset-md-3">
-        <div class="card">
-            <div class="card-body">
+<div class="row">
+    <!-- 左側、ログインエリア -->
+    <div class="card col-md-6">
+        <div class="card-body">
+            <form action="{% url 'register:login' %}" method="POST">
                 {{ form.non_field_errors }}
                 {% for field in form %}
                     {{ field }}
@@ -13,8 +14,15 @@
                 <button type="submit" class="btn btn-success btn-lg btn-block" >ログイン</button>
                 <input type="hidden" name="next" value="{{ next }}" />
                 {% csrf_token %}
-            </div>
+            </form>
         </div>
-    </div>
-</form>
+    </div><!-- 左側、ログインエリアおわり -->
+
+    <!-- 右側、会員登録エリア -->
+    <div class="card col-md-6">
+        <div class="card-body">
+            <a href="{% url 'register:user_create' %}" class="btn btn-success btn-lg btn-block" >会員登録</a>
+        </div>
+    </div><!-- 右側、会員登録エリアおわり -->
+</div>
 {% endblock %}
