@@ -15,3 +15,9 @@ pip install -r requirements.txt
 django-admin startproject project . 
 
 python manage.py startapp register
+
+書いてあることが終わったら
+
+python manage.py makemigrations register
+
+python manage.py runserver
