@@ -1,0 +1,7 @@
+{% extends "register/user_base.html" %}
+{% block content %}
+<p><a href="{% url 'register:user_data_input' %}">ユーザー作成</a></p><hr>
+{% for user in user_list %}
+    <p>ユーザー名: {{ user.username }}</p><hr>
+{% endfor %}
+{% endblock %}

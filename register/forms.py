@@ -72,3 +72,18 @@ class MySetPasswordForm(SetPasswordForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+
+class UserCreateForm(UserCreationForm):
+    """ユーザー登録用フォーム"""
+
+    class Meta:
+        model = User
+        # ユーザー名として扱っているフィールドだけ、作成時に入力する
+        fields = (User.USERNAME_FIELD,)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].widget.render_value = True
+        self.fields['password2'].widget.render_value = True
+        for field in self.fields.values():
+            field.widget.attrs['class'] = 'form-control'
