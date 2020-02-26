@@ -20,4 +20,6 @@ python manage.py startapp register
 
 python manage.py makemigrations register
 
+python manage.py migrate
+
 python manage.py runserver
