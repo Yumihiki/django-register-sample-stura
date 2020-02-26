@@ -31,10 +31,13 @@
           <li>
             <a class="nav-item nav-link" href="{% url 'register:logout' %}">ログアウト</a>
           </li>
+          <li>
+            <a class="nav-item nav-link" href="{% url 'register:password_change' %}">パスワードの変更</a>
+          </li>
           {% else %}
           <li class="nav-item">
             <a class="nav-item nav-link" href="{% url 'register:login' %}">
-            ようこそ、ゲストさん！ログインはこちら
+            ようこそ、ゲスト！ログインはこちら
           </a>
           </li>
           {% endif %}
