@@ -12,6 +12,7 @@ from django.shortcuts import redirect, resolve_url, render
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
 from django.views import generic
+from django.views.decorators.http import require_POST
 from .forms import (
     LoginForm, UserCreateForm, UserUpdateForm, MyPasswordChangeForm,
     MyPasswordResetForm, MySetPasswordForm, UserCreateForm
@@ -169,46 +170,57 @@ class UserList(generic.ListView):
     model = User
 
 
-class UserDataInput(generic.FormView):
-    """ ユーザー情報の入力
+def user_data_input(request):
+    """新規ユーザー情報の入力。"""
+    # 一覧表示からの遷移や、確認画面から戻るリンクを押したときはここ。
+    if request.method == 'GET':
+        # セッションに入力途中のデータがあればそれを使う。
+        form = UserCreateForm(request.session.get('form_data'))
+    else:
+        form = UserCreateForm(request.POST)
+        if form.is_valid():
+            # 入力後の送信ボタンでここ。セッションに入力データを格納する。
+            request.session['form_data'] = request.POST
+            return redirect('register:user_data_confirm')
 
-    このビューが呼ばれるのは、以下の２箇所です。
-    ・初回の入力欄表示（aタグでの遷移）
-    ・確認画面から戻るを押した場合（これはPOSTで飛ぶ）
-
-    初回の入力欄表示の際は、空のフォームをuser_data_input.htmlに渡し
-    戻る場合は、POSTで飛んできたフォームデータをそのままuser_data_input.htmlに渡す
-
-    """
-    template_name = 'register/user_data_input.html'
-    form_class = UserCreateForm
-
-    def form_valid(self, form):
-        return render(self.request, 'register/user_data_input.html', {'form': form})
-
-class UserDataConfirm(generic.FormView):
-    """ユーザー情報の確認
-
-    ユーザー情報入力後、「送信」を押すとこのビューが呼ばれます。(user_data_input.htmlのform action属性がこのビュー)
-    データが問題なければuser_data_confirm.html(確認ページ)を、入力内容に不備があればuser_data_input.html(入力ページ)に
-    フォームデータを渡します。
-
-    """
-    form_class = UserCreateForm
-
-    def form_valid(self, form):
-        return render(self.request, 'register/user_data_confirm.html', {'form': form})
-
-    def form_invalid(self, form):
-        return render(self.request, 'register/user_data_input.html', {'form': form})
+    context = {
+        'form': form
+    }
+    return render(request, 'register/user_data_input.html', context)
 
 
+def user_data_confirm(request):
+    """入力データの確認画面。"""
+    # user_data_inputで入力したユーザー情報をセッションから取り出す。
+    session_form_data = request.session.get('form_data')
+    if session_form_data is None:
+        # セッション切れや、セッションが空でURL直接入力したら入力画面にリダイレクト。
+        return redirect('register:user_data_input')
 
-class UserDataCreate(generic.CreateView):
-    """ユーザーデータの登録ビュー　ここ以外では、CreateViewを使わない"""
-    form_class = UserCreateForm
-    success_url = reverse_lazy('register:user_list')
+    context = {
+        'form': UserCreateForm(session_form_data)
+    }
+    return render(request, 'register/user_data_confirm.html', context)
 
-    def form_invalid(self, form):
-        """基本的にはここに飛んでこないはずです。UserDataConfrimでバリデーションは済んでるため"""
-        return render(self.request, 'register/user_data_input.html', {'form': form})
+
+@require_POST
+def user_data_create(request):
+    """ユーザーを作成する。"""
+    # user_data_inputで入力したユーザー情報をセッションから取り出す。
+    # ユーザー作成後は、セッションを空にしたいのでpopメソッドで取り出す。
+    session_form_data = request.session.pop('form_data', None)
+    if session_form_data is None:
+        # ここにはPOSTメソッドで、かつセッションに入力データがなかった場合だけ。
+        # セッション切れや、不正なアクセス対策。
+        return redirect('register:user_data_input')
+
+    form = UserCreateForm(session_form_data)
+    if form.is_valid():
+        form.save()
+        return redirect('register:user_list')
+
+    # is_validに通過したデータだけセッションに格納しているので、ここ以降の処理は基本的には通らない。
+    context = {
+        'form': form
+    }
+    return render(request, 'register/user_data_input.html', context)

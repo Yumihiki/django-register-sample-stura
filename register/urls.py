@@ -4,10 +4,10 @@ from . import views
 app_name = 'register'
 
 urlpatterns = [
-    path('user_list', views.UserList.as_view(), name='user_list'),
-    path('user_data_input/', views.UserDataInput.as_view(), name='user_data_input'),
-    path('user_data_confirm/', views.UserDataConfirm.as_view(), name='user_data_confirm'),
-    path('user_data_create/', views.UserDataCreate.as_view(), name='user_data_create'),
+    path('', views.UserList.as_view(), name='user_list'),
+    path('user_data_input/', views.user_data_input, name='user_data_input'),
+    path('user_data_confirm/', views.user_data_confirm, name='user_data_confirm'),
+    path('user_data_create/', views.user_data_create, name='user_data_create'),
     path('', views.Top.as_view(), name='top'),
     path('login/', views.Login.as_view(), name='login'),
     path('logout/', views.Logout.as_view(), name='logout'),
